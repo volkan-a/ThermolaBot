@@ -20,15 +20,27 @@ matplotlib.use('Agg')
 ureg = UnitRegistry()
 
 PROPERTIES = {
-    "Temperature": "T",
-    "Pressure": "P",
-    "Density": "D",
-    "Specific Volume": "V",
-    "Specific Enthalpy": "H",
-    "Specific Entropy": "S",
-    "Specific Internal Energy": "U",
-    "Vapor Quality": "Q",
-    "Vapor Fraction": "Q",
+    "Temperature".casefold(): "T",
+    "Pressure".casefold(): "P",
+    "Density".casefold(): "D",
+    "Specific Volume".casefold(): "V",
+    "Specific Enthalpy".casefold(): "H",
+    "Specific Entropy".casefold(): "S",
+    "Specific Internal Energy".casefold(): "U",
+    "Vapor Quality".casefold(): "Q",
+    "Vapor Fraction".casefold(): "Q",
+}
+
+DEFAULT_UNITS = {
+    "Temperature".casefold(): "K",
+    "Pressure".casefold(): "Pa",
+    "Density".casefold(): "kg/m^3",
+    "Specific Volume".casefold(): "m^3/kg",
+    "Specific Enthalpy".casefold(): "J/kg",
+    "Specific Entropy".casefold(): "J/kg/K",
+    "Specific Internal Energy".casefold(): "J/kg",
+    "Vapor Quality".casefold(): "",
+    "Vapor Fraction".casefold(): "",
 }
 
 
@@ -54,15 +66,18 @@ def list_properties(update: Update, context: CallbackContext):
 def calculate(update: Update, context: CallbackContext):
     msg = update.message.text.replace("/calculate ", "")
     parameters = get_calculate_parameters(msg)
+    property = PROPERTIES[parameters[0].casefold()]
+    fluid = parameters[1].casefold()
     if parameters.count(None) > 0:
         update.message.reply_text(get_calculate_error(
             parameters), parse_mode="MarkdownV2")
         return
     [p1, v1] = convert_units(parameters[2])
     [p2, v2] = convert_units(parameters[3])
+    result = CP.CoolProp.PropsSI(property, p1, v1, p2, v2, fluid)
 
-    update.message.reply_text(CP.CoolProp.PropsSI(
-        parameters[0], p1, v1, p2, v2, parameters[1]))
+    update.message.reply_text(
+        f"{result:.3f} {DEFAULT_UNITS[parameters[0].casefold()]}")
 
 
 def convert_units(parameter: str) -> [str, float]:
@@ -70,7 +85,14 @@ def convert_units(parameter: str) -> [str, float]:
     if prop.casefold() == "pressure":
         return ["P", float(val)*ureg(unit).to("Pa").magnitude]
     elif prop.casefold() == "temperature":
-        return ["T", float(val)*ureg(unit).to("K").magnitude]
+        if unit == "K":
+            return ["T", float(val)]
+        elif unit == "C":
+            return ["T", ureg.Quantity(float(val), "degC").to("K").magnitude]
+        elif unit == "F":
+            return ["T", ureg.Quantity(float(val), "degF").to("K").magnitude]
+        elif unit == "R":
+            return ["T", ureg.Quantity(float(val), "degR").to("K").magnitude]
     elif prop.casefold() == "specific internal energy":
         return ["U", float(val)*ureg(unit).to("J/kg").magnitude]
     elif prop.casefold() == "specific entropy":

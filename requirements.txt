@@ -1,3 +1,5 @@
 numpy == 1.21.5
 matplotlib == 3.5.1
 python-telegram-bot == 13.5
+pint == 0.18
+coolprop == 6.4.1
