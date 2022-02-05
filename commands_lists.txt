@@ -1,0 +1,7 @@
+list_fluids - List available fluids /list_fluids
+get_aliases - List alias for selected fluid /get_aliases {fluid_name}
+list_properties - List all available properties /list_properties
+calculate - Calculate thermodynamic property of fluid for given state /calculate {property} of {fluid} at {value1} {unit1} {property1} and {value2} {unit2} {property2}
+ts_plotter - Plot Ts (temperature - specific entropy) diagram for selected fluid  /ts_plotter {fluid}
+pv_plotter - Plot Pv (pressure - specific volume) diagram for selected fluid  /pv_plotter {fluid}
+ph_plotter - Plot Ph (pressure - specific enthalpy) diagram for selected fluid  /ph_plotter {fluid}
